@@ -1,0 +1,11 @@
+{
+  "Group": "Misc",
+  "FriendlyName": "Infigo Marketplace",
+  "SystemName": "Misc.InfigoMarketplace",
+  "Version": "1.00",
+  "SupportedVersions": [ "5.00" ],
+  "Author": "Olaras Alex",
+  "DisplayOrder": 1,
+  "FileName": "Nop.Plugin.Misc.InfigoMarketplace.dll",
+  "Description": "On-demand import of Infigo packages as nop products."
+}

@@ -1,0 +1,167 @@
+@model ConfigurationModel
+
+@{
+    Layout = "_ConfigurePlugin";
+}
+
+@await Component.InvokeAsync(typeof(StoreScopeConfigurationViewComponent))
+
+<form asp-controller="InfigoMarketplaceAdmin" asp-action="Configure" method="post">
+    <div class="cards-group">
+        <div class="card card-default">
+            <div class="card-header">
+                @T("Plugins.Misc.InfigoMarketplace.Configure.ConnectionSettings")
+            </div>
+            <div class="card-body">
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="BaseUrl_OverrideForStore"
+                                                     asp-input="BaseUrl"
+                                                     asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="BaseUrl" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="BaseUrl" html-attributes="@(new { placeholder = "https://infigomarketplace.com" })" />
+                        <span asp-validation-for="BaseUrl"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="ApiKey_OverrideForStore"
+                                                     asp-input="ApiKey"
+                                                     asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ApiKey" />
+                    </div>
+                    <div class="col-md-9">
+                        <input asp-for="ApiKey" type="password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ApiKey"></span>
+                        <div class="form-text text-muted">
+                            @T("Plugins.Misc.InfigoMarketplace.Fields.ApiKey.PlaintextWarning")
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-label asp-for="HttpTimeoutSeconds" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="HttpTimeoutSeconds" />
+                        <span asp-validation-for="HttpTimeoutSeconds"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-9 offset-md-3">
+                        <button type="submit" class="btn btn-primary">@T("Admin.Common.Save")</button>
+                        <button type="button" id="test-connection-btn" class="btn btn-secondary">
+                            @T("Plugins.Misc.InfigoMarketplace.Configure.TestConnection")
+                        </button>
+                    </div>
+                </div>
+                <div id="test-connection-result" class="form-group row" style="display:none;">
+                    <div class="col-md-9 offset-md-3">
+                        <div id="test-connection-message" class="alert"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="cards-group">
+    <div class="card card-default">
+        <div class="card-header text-danger">
+            @T("Plugins.Misc.InfigoMarketplace.Configure.DangerZone")
+        </div>
+        <div class="card-body">
+            <div class="form-group row">
+                <div class="col-md-9 offset-md-3">
+                    <p class="text-muted">@T("Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities.Hint")</p>
+                    <button type="button" id="delete-imported-btn" class="btn btn-danger">
+                        @T("Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities")
+                    </button>
+                </div>
+            </div>
+            <div id="delete-imported-result" class="form-group row" style="display:none;">
+                <div class="col-md-9 offset-md-3">
+                    <div id="delete-imported-message" class="alert"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#test-connection-btn').on('click', function () {
+            var btn = $(this);
+            btn.prop('disabled', true);
+
+            var postData = {
+                baseUrl: $('#@Html.IdFor(m => m.BaseUrl)').val(),
+                apiKey: $('#@Html.IdFor(m => m.ApiKey)').val()
+            };
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("TestConnection", "InfigoMarketplaceAdmin")',
+                data: postData,
+                success: function (data) {
+                    var resultDiv = $('#test-connection-result');
+                    var msgDiv = $('#test-connection-message');
+                    msgDiv.removeClass('alert-success alert-danger');
+                    if (data.success) {
+                        msgDiv.addClass('alert-success').text(data.message);
+                    } else {
+                        msgDiv.addClass('alert-danger').text(data.message);
+                    }
+                    resultDiv.show();
+                },
+                error: function () {
+                    var resultDiv = $('#test-connection-result');
+                    var msgDiv = $('#test-connection-message');
+                    msgDiv.removeClass('alert-success alert-danger').addClass('alert-danger')
+                          .text('An unexpected error occurred.');
+                    resultDiv.show();
+                },
+                complete: function () {
+                    btn.prop('disabled', false);
+                }
+            });
+        });
+
+        $('#delete-imported-btn').on('click', function () {
+            if (!confirm('@T("Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities.Confirm")'))
+                return;
+
+            var btn = $(this);
+            btn.prop('disabled', true);
+
+            var postData = {};
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("DeleteImportedEntities", "InfigoMarketplaceAdmin")',
+                data: postData,
+                success: function (data) {
+                    var msgDiv = $('#delete-imported-message');
+                    msgDiv.removeClass('alert-success alert-danger');
+                    msgDiv.addClass(data.success ? 'alert-success' : 'alert-danger').text(data.message);
+                    $('#delete-imported-result').show();
+                },
+                error: function () {
+                    var msgDiv = $('#delete-imported-message');
+                    msgDiv.removeClass('alert-success alert-danger').addClass('alert-danger')
+                          .text('An unexpected error occurred.');
+                    $('#delete-imported-result').show();
+                },
+                complete: function () {
+                    btn.prop('disabled', false);
+                }
+            });
+        });
+    });
+</script>
