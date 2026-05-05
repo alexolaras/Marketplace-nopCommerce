@@ -67,9 +67,52 @@ public class InfigoBrowseModelFactory(
                 CurrentVersion = package.CurrentVersion,
                 Tags = package.Tags is { Count: > 0 } ? string.Join(", ", package.Tags) : string.Empty,
                 Installed = installedMap.ContainsKey(package.Id),
-                InstalledProductId = installedMap.TryGetValue(package.Id, out var productId) ? productId : null
+                InstalledProductId = installedMap.TryGetValue(package.Id, out var productId) ? productId : null,
+                ImageUrl = package.Images?.FirstOrDefault()?.Thumbnails?.FirstOrDefault()?.Url
+                    ?? package.Images?.FirstOrDefault()?.Url
             }));
 
         return listModel;
+    }
+
+    public async Task<PackageDetailsModel> PreparePackageDetailsModelAsync(Guid id, CancellationToken ct = default)
+    {
+        var package = await apiClient.GetPackageAsync(id, ct);
+        if (package == null)
+            return null;
+
+        var installedMap = await installedPackageTracker.GetInstalledProductIdsAsync(new[] { package.Id });
+
+        var model = new PackageDetailsModel
+        {
+            Id = package.Id,
+            Name = package.Name,
+            Description = package.Description,
+            Type = package.Type,
+            CategoryName = package.CategoryName,
+            Versions = package.Versions ?? new List<string>(),
+            Tags = package.Tags ?? new List<string>(),
+            Installed = installedMap.ContainsKey(package.Id),
+            InstalledProductId = installedMap.TryGetValue(package.Id, out var productId) ? productId : null,
+        };
+
+        if (package.Images is { Count: > 0 })
+        {
+            foreach (var image in package.Images)
+            {
+                var fullUrl = image.Url;
+                var thumbUrl = image.Thumbnails?.FirstOrDefault()?.Url ?? fullUrl;
+                if (string.IsNullOrWhiteSpace(fullUrl) && string.IsNullOrWhiteSpace(thumbUrl))
+                    continue;
+
+                model.Images.Add(new PackageImageModel
+                {
+                    Url = fullUrl ?? thumbUrl,
+                    ThumbnailUrl = thumbUrl ?? fullUrl,
+                });
+            }
+        }
+
+        return model;
     }
 }

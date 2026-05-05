@@ -7,7 +7,8 @@ public record PackageDetailApiResponse(
     string Type,
     Guid? CategoryId,
     string? CategoryName,
-    string CurrentVersion,
+    List<string> Versions,
     List<string> Tags,
-    string? DownloadUrl
+    string? DownloadUrl,
+    List<ImageApiResponse> Images
 );

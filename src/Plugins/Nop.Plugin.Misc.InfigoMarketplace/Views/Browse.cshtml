@@ -6,12 +6,15 @@
     NopHtml.SetActiveMenuItemSystemName(InfigoMarketplaceDefaults.SystemName);
 }
 
+<link rel="stylesheet" href="~/Plugins/Misc.InfigoMarketplace/Content/styles.css" />
+
 <div class="content-header clearfix">
-    <h1 class="float-left">
+    <h1 class="float-left mp-title">
+        <i class="fas fa-box-open mp-title-icon"></i>
         @T("Plugins.Misc.InfigoMarketplace.Browse.Title")
     </h1>
     <div class="float-right">
-        <button type="button" id="import-selected" class="btn btn-primary">
+        <button type="button" id="import-selected" class="btn mp-btn-primary">
             <i class="fas fa-cloud-arrow-down"></i>
             @T("Plugins.Misc.InfigoMarketplace.Browse.ImportSelected")
         </button>
@@ -23,181 +26,31 @@
     <div class="container-fluid">
         <div class="form-horizontal">
             <div class="cards-group">
-                <div class="card card-default card-search">
+                <div class="card mp-search-card">
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group row">
-                                    <div class="col-md-4">
-                                        <nop-label asp-for="SearchName" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <nop-editor asp-for="SearchName" />
-                                    </div>
+                        <div class="mp-search-row">
+                            <div class="mp-search-field mp-search-field-name">
+                                <label class="mp-search-label" asp-for="SearchName"></label>
+                                <div class="mp-input-icon-wrapper">
+                                    <i class="fas fa-magnifying-glass mp-input-icon"></i>
+                                    <input asp-for="SearchName" class="form-control mp-input" placeholder="Package Name..." />
                                 </div>
-                                <div class="form-group row">
-                                    <div class="col-md-4">
-                                        <nop-label asp-for="SearchCategoryId" />
-                                    </div>
-                                    <div class="col-md-8">
-                                        <nop-select asp-for="SearchCategoryId" asp-items="Model.AvailableCategories" />
-                                    </div>
-                                </div>
+                            </div>
+                            <div class="mp-search-field mp-search-field-category">
+                                <label class="mp-search-label">&nbsp;</label>
+                                <select asp-for="SearchCategoryId" asp-items="Model.AvailableCategories" class="form-control mp-select"></select>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="text-center col-12">
-                                <button type="button" id="search-packages" class="btn btn-primary btn-search">
-                                    <i class="fas fa-magnifying-glass"></i>
-                                    @T("Admin.Common.Search")
-                                </button>
-                            </div>
+                        <div class="mp-search-actions">
+                            <button type="button" id="search-packages" class="btn mp-btn-primary">
+                                <i class="fas fa-filter"></i>
+                                @T("Admin.Common.Search")
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="card card-default">
-                    <div class="card-body">
-                        @await Html.PartialAsync("Table", new DataTablesModel
-                        {
-                            Name = "infigo-packages-grid",
-                            UrlRead = new DataUrl("BrowsePackageList", "InfigoMarketplaceAdmin", null),
-                            SearchButtonId = "search-packages",
-                            Length = Model.PageSize,
-                            LengthMenu = Model.AvailablePageSizes,
-                            Filters = new List<FilterParameter>
-                            {
-                                new FilterParameter(nameof(Model.SearchName)),
-                                new FilterParameter(nameof(Model.SearchCategoryId))
-                            },
-                            ColumnCollection = new List<ColumnProperty>
-                            {
-                                new ColumnProperty(nameof(PackageModel.Id))
-                                {
-                                    IsMasterCheckBox = true,
-                                    Render = new RenderCheckBox("checkbox_packages"),
-                                    ClassName = NopColumnClassDefaults.CenterAll,
-                                    Width = "50"
-                                },
-                                new ColumnProperty(nameof(PackageModel.Name))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Name").Text
-                                },
-                                new ColumnProperty(nameof(PackageModel.Description))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Description").Text
-                                },
-                                new ColumnProperty(nameof(PackageModel.CategoryName))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Category").Text
-                                },
-                                new ColumnProperty(nameof(PackageModel.Type))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Type").Text,
-                                    Width = "120"
-                                },
-                                new ColumnProperty(nameof(PackageModel.CurrentVersion))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.CurrentVersion").Text,
-                                    Width = "120"
-                                },
-                                new ColumnProperty(nameof(PackageModel.Tags))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Tags").Text
-                                },
-                                new ColumnProperty(nameof(PackageModel.Installed))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Installed").Text,
-                                    Width = "100",
-                                    ClassName = NopColumnClassDefaults.CenterAll,
-                                    Render = new RenderBoolean()
-                                },
-                                new ColumnProperty(nameof(PackageModel.InstalledProductId))
-                                {
-                                    Title = T("Admin.Common.Edit").Text,
-                                    Width = "100",
-                                    ClassName = NopColumnClassDefaults.Button,
-                                    Render = new RenderCustom("renderProductEditButton")
-                                },
-                                new ColumnProperty(nameof(PackageModel.Id))
-                                {
-                                    Title = T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Action").Text,
-                                    Width = "120",
-                                    ClassName = NopColumnClassDefaults.Button,
-                                    Render = new RenderCustom("renderImportButton")
-                                }
-                            }
-                        })
-
-                        <script>
-                            function renderProductEditButton(data, type, row, meta) {
-                                if (!data) {
-                                    return '';
-                                }
-                                var url = '@Url.Content("~/Admin/Product/Edit/")' + encodeURIComponent(data);
-                                return '<a class="btn btn-default" href="' + url + '"><i class="fas fa-pencil-alt"></i>&nbsp;@T("Admin.Common.Edit")</a>';
-                            }
-
-                            function renderImportButton(data, type, row, meta) {
-                                if (!data) {
-                                    return '';
-                                }
-                                var label = row.Installed
-                                    ? '@T("Plugins.Misc.InfigoMarketplace.Browse.ReImport")'
-                                    : '@T("Plugins.Misc.InfigoMarketplace.Browse.Import")';
-                                var cls = row.Installed ? 'btn-secondary' : 'btn-primary';
-                                return '<button type="button" class="btn ' + cls + ' import-single" data-id="' + data + '">' +
-                                    '<i class="fas fa-cloud-arrow-down"></i>&nbsp;' + label + '</button>';
-                            }
-
-                            $(function () {
-                                function postImport(ids) {
-                                    var postData = { selectedIds: ids };
-                                    addAntiForgeryToken(postData);
-                                    $.ajax({
-                                        cache: false,
-                                        type: 'POST',
-                                        url: '@(Url.Action("Import", "InfigoMarketplaceAdmin"))',
-                                        data: postData,
-                                        traditional: true,
-                                        beforeSend: function () {
-                                            showThrobber('@T("Plugins.Misc.InfigoMarketplace.Browse.Importing")');
-                                        },
-                                        error: function (jqXHR, textStatus, errorThrown) {
-                                            showAlert('import-failed', errorThrown);
-                                        },
-                                        success: function (data) {
-                                            if (data && data.message) {
-                                                displayBarNotification(data.message, data.success ? 0 : 1, 5000);
-                                            }
-                                        },
-                                        complete: function (jqXHR) {
-                                            $('.throbber').hide();
-                                            window.setTimeout(function () { $('.throbber').hide(); }, 1100);
-                                            if (jqXHR.status === 204) {
-                                                showAlert('nothingSelectedAlert', '@T("Admin.Common.Alert.NothingSelected")');
-                                                return;
-                                            }
-                                            updateTable('#infigo-packages-grid');
-                                        }
-                                    });
-                                }
-
-                                $('#import-selected-action-confirmation-submit-button').on('click', function () {
-                                    $('#import-selected-action-confirmation').modal('toggle');
-                                    postImport(selectedIds);
-                                    return false;
-                                });
-
-                                $('#infigo-packages-grid').on('click', '.import-single', function (e) {
-                                    e.preventDefault();
-                                    var id = $(this).data('id');
-                                    postImport([id]);
-                                });
-                            });
-                        </script>
-                    </div>
-                </div>
+                <div id="packages-grid" class="mp-grid"></div>
             </div>
         </div>
     </div>
@@ -205,3 +58,114 @@
 
 <nop-alert asp-alert-id="import-failed" />
 <nop-alert asp-alert-id="nothingSelectedAlert" />
+
+<script>
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    var detailsUrlTemplate = '@Url.Action("Details", "InfigoMarketplaceAdmin", new { id = "__ID__" })';
+
+    var pkgLabels = {
+        version: '@T("Plugins.Misc.InfigoMarketplace.Browse.Fields.CurrentVersion")',
+        installed: '@T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Installed")',
+        available: '@T("Plugins.Misc.InfigoMarketplace.Browse.Available")',
+        uncategorized: '@T("Plugins.Misc.InfigoMarketplace.Browse.Uncategorized")'
+    };
+
+    function renderPackageCard(pkg) {
+        var imageHtml = pkg.ImageUrl
+            ? '<img src="' + escapeHtml(pkg.ImageUrl) + '" class="pkg-card-thumb" alt="' + escapeHtml(pkg.Name) + '">'
+            : '<i class="fas fa-box pkg-card-thumb-placeholder"></i>';
+
+        var url = detailsUrlTemplate.replace('__ID__', encodeURIComponent(pkg.Id));
+
+        var versionHtml = pkg.CurrentVersion
+            ? '<span class="pkg-card-version">' + pkgLabels.version + ' ' + escapeHtml(pkg.CurrentVersion) + '</span>'
+            : '';
+
+        var descriptionHtml = pkg.Description
+            ? '<div class="pkg-card-description">' + escapeHtml(pkg.Description) + '</div>'
+            : '';
+
+        var typeLabel = pkg.Type ? escapeHtml(pkg.Type) : pkgLabels.uncategorized;
+
+        var statusClass = pkg.Installed ? 'pkg-card-status-installed' : 'pkg-card-status-available';
+        var statusLabel = pkg.Installed ? pkgLabels.installed : pkgLabels.available;
+
+        return '<a class="pkg-card" href="' + url + '">' +
+            '<div class="pkg-card-image">' +
+                '<span class="pkg-card-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>' +
+                imageHtml +
+            '</div>' +
+            '<div class="pkg-card-body">' +
+                '<div class="pkg-card-title">' + escapeHtml(pkg.Name) + '</div>' +
+                versionHtml +
+                descriptionHtml +
+                '<div class="pkg-card-footer">' +
+                    '<span class="pkg-card-category"><i class="far fa-comment"></i> ' + typeLabel + '</span>' +
+                    '<span class="pkg-card-status ' + statusClass + '"><i class="fas fa-circle-down"></i> ' + statusLabel + '</span>' +
+                '</div>' +
+            '</div>' +
+            '</a>';
+    }
+
+    function loadPackages() {
+        var postData = {
+            SearchName: $('#SearchName').val(),
+            SearchCategoryId: $('#SearchCategoryId').val(),
+            pageSize: @Model.PageSize
+        };
+        addAntiForgeryToken(postData);
+        $('#packages-grid').html(
+            '<div class="mp-grid-loading"><i class="fas fa-spinner fa-spin fa-2x"></i></div>'
+        );
+        $.ajax({
+            cache: false,
+            type: 'POST',
+            url: '@(Url.Action("BrowsePackageList", "InfigoMarketplaceAdmin"))',
+            data: postData,
+            error: function (jqXHR, textStatus, errorThrown) {
+                $('#packages-grid').html(
+                    '<div class="mp-grid-error">' + escapeHtml(errorThrown) + '</div>'
+                );
+            },
+            success: function (data) {
+                var grid = $('#packages-grid');
+                grid.empty();
+                if (!data || !data.Data || data.Data.length === 0) {
+                    grid.html('<div class="mp-grid-empty">@T("Plugins.Misc.InfigoMarketplace.Browse.NoItems")</div>');
+                    return;
+                }
+                $.each(data.Data, function (i, pkg) {
+                    grid.append(renderPackageCard(pkg));
+                });
+            }
+        });
+    }
+
+    $(function () {
+        loadPackages();
+
+        $('#search-packages').on('click', function () {
+            loadPackages();
+        });
+
+        $('#SearchName').on('keydown', function (e) {
+            if (e.key === 'Enter') loadPackages();
+        });
+
+        $('#import-selected-action-confirmation-submit-button').on('click', function () {
+            $('#import-selected-action-confirmation').modal('toggle');
+            var ids = $('.checkbox-package:checked').map(function () { return $(this).val(); }).get();
+            postImport(ids);
+            return false;
+        });
+
+        $(document).on('click', '.import-single', function (e) {
+            e.preventDefault();
+            postImport([$(this).data('id')]);
+        });
+    });
+</script>

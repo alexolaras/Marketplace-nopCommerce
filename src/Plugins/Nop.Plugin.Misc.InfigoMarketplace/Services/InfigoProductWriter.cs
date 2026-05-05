@@ -3,6 +3,7 @@ using Nop.Plugin.Misc.InfigoMarketplace.Api.Dtos;
 using Nop.Plugin.Misc.InfigoMarketplace.Helpers;
 using Nop.Plugin.Misc.InfigoMarketplace.Models.Import;
 using Nop.Services.Catalog;
+using Nop.Services.Media;
 using Nop.Services.Seo;
 
 namespace Nop.Plugin.Misc.InfigoMarketplace.Services;
@@ -10,6 +11,8 @@ namespace Nop.Plugin.Misc.InfigoMarketplace.Services;
 public class InfigoProductWriter(
     IProductService productService,
     IUrlRecordService urlRecordService,
+    IPictureService pictureService,
+    IInfigoImageDownloader imageDownloader,
     IInfigoMarkerStore markerStore) : IInfigoProductWriter
 {
     public async Task<ProductUpsertResult> UpsertAsync(PackageDetailApiResponse pkg)
@@ -23,7 +26,7 @@ public class InfigoProductWriter(
         await markerStore.WriteProductMarkersAsync(
             product,
             pkg.Id,
-            pkg.CurrentVersion ?? string.Empty,
+            pkg.Versions?.FirstOrDefault() ?? string.Empty,
             pkg.Type ?? string.Empty);
 
         return new ProductUpsertResult(product, action);
@@ -60,6 +63,8 @@ public class InfigoProductWriter(
         var seName = await urlRecordService.ValidateSeNameAsync(product, string.Empty, product.Name, true);
         await urlRecordService.SaveSlugAsync(product, seName, 0);
 
+        await AttachPicturesAsync(product, pkg);
+
         return product;
     }
 
@@ -76,5 +81,38 @@ public class InfigoProductWriter(
 
         await productService.UpdateProductAsync(product);
         return product;
+    }
+
+    private async Task AttachPicturesAsync(Product product, PackageDetailApiResponse pkg)
+    {
+        if (pkg.Images is null || pkg.Images.Count == 0)
+            return;
+
+        var seoFilenameBase = await pictureService.GetPictureSeNameAsync(product.Name);
+        var displayOrder = 0;
+
+        foreach (var image in pkg.Images)
+        {
+            if (string.IsNullOrWhiteSpace(image.Url))
+                continue;
+
+            var downloaded = await imageDownloader.TryDownloadAsync(image.Url);
+            if (downloaded is null)
+                continue;
+
+            var picture = await pictureService.InsertPictureAsync(
+                downloaded.Bytes,
+                downloaded.MimeType,
+                seoFilenameBase,
+                altAttribute: product.Name,
+                titleAttribute: product.Name);
+
+            await productService.InsertProductPictureAsync(new ProductPicture
+            {
+                ProductId = product.Id,
+                PictureId = picture.Id,
+                DisplayOrder = displayOrder++
+            });
+        }
     }
 }

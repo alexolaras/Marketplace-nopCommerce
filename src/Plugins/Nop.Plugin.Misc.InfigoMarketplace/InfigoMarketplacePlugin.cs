@@ -73,6 +73,23 @@ public class InfigoMarketplacePlugin(
             ["Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities.Confirm"] = "This will permanently delete all Infigo-imported products and categories. Admin customisations will be lost. Continue?",
             ["Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities.Success"] = "Deleted {0} products and {1} categories.",
             ["Plugins.Misc.InfigoMarketplace.Configure.DeleteImportedEntities.NothingToDelete"] = "No Infigo-imported entities found.",
+            ["Plugins.Misc.InfigoMarketplace.Browse.NoItems"] = "No packages found.",
+            ["Plugins.Misc.InfigoMarketplace.Browse.Available"] = "Available",
+            ["Plugins.Misc.InfigoMarketplace.Browse.Uncategorized"] = "Uncategorized",
+            ["Plugins.Misc.InfigoMarketplace.Import.Failed"] = "Import failed. Please try again.",
+            ["Plugins.Misc.InfigoMarketplace.Details.Title"] = "Package Details",
+            ["Plugins.Misc.InfigoMarketplace.Details.BackToBrowse"] = "Back to browse",
+            ["Plugins.Misc.InfigoMarketplace.Details.Category"] = "Category:",
+            ["Plugins.Misc.InfigoMarketplace.Details.Type"] = "Type:",
+            ["Plugins.Misc.InfigoMarketplace.Details.Tags"] = "Tags",
+            ["Plugins.Misc.InfigoMarketplace.Details.NoTagsFound"] = "No Tags Found",
+            ["Plugins.Misc.InfigoMarketplace.Details.Latest"] = "(latest)",
+            ["Plugins.Misc.InfigoMarketplace.Details.LatestVersion"] = "Latest version",
+            ["Plugins.Misc.InfigoMarketplace.Details.About"] = "About this package",
+            ["Plugins.Misc.InfigoMarketplace.Details.Details"] = "Details",
+            ["Plugins.Misc.InfigoMarketplace.Details.VersionToImport"] = "Version to import",
+            ["Plugins.Misc.InfigoMarketplace.Details.ImportPackage"] = "Import package",
+            ["Plugins.Misc.InfigoMarketplace.Details.ViewImportedProduct"] = "View imported product",
         });
 
         await base.InstallAsync();

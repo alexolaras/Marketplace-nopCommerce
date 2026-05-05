@@ -8,5 +8,6 @@ public record PackageApiResponse(
     Guid? CategoryId,
     string? CategoryName,
     string CurrentVersion,
-    List<string> Tags
+    List<string> Tags,
+    List<ImageApiResponse> Images
 );

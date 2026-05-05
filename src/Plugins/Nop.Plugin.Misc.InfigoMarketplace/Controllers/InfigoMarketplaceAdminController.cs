@@ -134,6 +134,24 @@ public class InfigoMarketplaceAdminController(
         }
     }
 
+    [CheckPermission(InfigoMarketplacePermissionConfigManager.MANAGE_INFIGO_MARKETPLACE)]
+    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+    {
+        try
+        {
+            var model = await browseModelFactory.PreparePackageDetailsModelAsync(id, ct);
+            if (model == null)
+                return RedirectToAction(nameof(Browse));
+
+            return View("~/Plugins/Misc.InfigoMarketplace/Views/PackageDetails.cshtml", model);
+        }
+        catch (InfigoApiException ex)
+        {
+            notificationService.ErrorNotification(ex.Message);
+            return RedirectToAction(nameof(Browse));
+        }
+    }
+
     [HttpPost]
     [CheckPermission(InfigoMarketplacePermissionConfigManager.MANAGE_INFIGO_MARKETPLACE)]
     public async Task<IActionResult> Import(ICollection<Guid> selectedIds, CancellationToken ct)

@@ -1,0 +1,244 @@
+@model PackageDetailsModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewBag.PageTitle = T("Plugins.Misc.InfigoMarketplace.Details.Title").Text;
+    NopHtml.SetActiveMenuItemSystemName(InfigoMarketplaceDefaults.SystemName);
+
+    var firstImage = Model.Images.FirstOrDefault();
+    var latestVersion = Model.Versions.LastOrDefault();
+}
+
+<link rel="stylesheet" href="~/Plugins/Misc.InfigoMarketplace/Content/styles.css" />
+
+<div class="content-header clearfix">
+    <h1 class="float-left mp-title">
+        <i class="fas fa-box-open mp-title-icon"></i>
+        @T("Plugins.Misc.InfigoMarketplace.Details.Title")
+    </h1>
+    <div class="float-right">
+        <a asp-action="Browse" class="btn mp-btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            @T("Plugins.Misc.InfigoMarketplace.Details.BackToBrowse")
+        </a>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="mp-details-layout">
+            <div class="mp-details-left">
+                <div class="mp-details-gallery">
+                    @if (Model.Images.Count > 1)
+                    {
+                        <div class="mp-details-thumbs">
+                            @for (var i = 0; i < Model.Images.Count; i++)
+                            {
+                                var img = Model.Images[i];
+                                <button type="button"
+                                        class="mp-details-thumb @(i == 0 ? "mp-details-thumb-active" : null)"
+                                        data-full="@img.Url">
+                                    <img src="@img.ThumbnailUrl" alt="@Model.Name" />
+                                </button>
+                            }
+                        </div>
+                    }
+                    <div class="mp-details-main-image">
+                        @if (firstImage != null)
+                        {
+                            <img id="mp-details-active-image" src="@firstImage.Url" alt="@Model.Name" class="mp-details-image" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-box mp-details-image-placeholder"></i>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mp-details-right">
+                <div class="mp-details-card mp-details-summary">
+                    <h2 class="mp-details-name">@Model.Name</h2>
+
+                    <div class="mp-details-badges">
+                        @if (!string.IsNullOrWhiteSpace(Model.Type))
+                        {
+                            <span class="mp-details-badge mp-details-badge-type">@Model.Type</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(latestVersion))
+                        {
+                            <span class="mp-details-badge mp-details-badge-version">
+                                v@(latestVersion) @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
+                            </span>
+                        }
+                        @if (Model.Installed)
+                        {
+                            <span class="mp-details-badge mp-details-badge-installed">
+                                <i class="fas fa-circle-check"></i>
+                                @T("Plugins.Misc.InfigoMarketplace.Browse.Fields.Installed")
+                            </span>
+                        }
+                    </div>
+
+                    <div class="mp-details-section-label">@T("Plugins.Misc.InfigoMarketplace.Details.Tags")</div>
+                    @if (Model.Tags.Count == 0)
+                    {
+                        <div class="mp-details-tags-empty">@T("Plugins.Misc.InfigoMarketplace.Details.NoTagsFound")</div>
+                    }
+                    else
+                    {
+                        <div class="mp-details-tags">
+                            @foreach (var tag in Model.Tags)
+                            {
+                                <span class="mp-details-tag">@tag</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="mp-details-card mp-details-meta-card">
+                    <h3 class="mp-details-section-title">@T("Plugins.Misc.InfigoMarketplace.Details.Details")</h3>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Type))
+                    {
+                        <div class="mp-details-meta-row">
+                            <span class="mp-details-meta-label">
+                                <i class="fas fa-tag"></i>
+                                @T("Plugins.Misc.InfigoMarketplace.Details.Type")
+                            </span>
+                            <span class="mp-details-meta-value">@Model.Type</span>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CategoryName))
+                    {
+                        <div class="mp-details-meta-row">
+                            <span class="mp-details-meta-label">
+                                <i class="fas fa-folder"></i>
+                                @T("Plugins.Misc.InfigoMarketplace.Details.Category")
+                            </span>
+                            <span class="mp-details-meta-value">@Model.CategoryName</span>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(latestVersion))
+                    {
+                        <div class="mp-details-meta-row">
+                            <span class="mp-details-meta-label">
+                                <i class="fas fa-code-branch"></i>
+                                @T("Plugins.Misc.InfigoMarketplace.Details.LatestVersion")
+                            </span>
+                            <span class="mp-details-meta-value">v@(latestVersion)</span>
+                        </div>
+                    }
+
+                    <div class="mp-details-import-row">
+                        <div class="mp-details-version-picker">
+                            <label class="mp-details-version-label" for="mp-details-version">
+                                @T("Plugins.Misc.InfigoMarketplace.Details.VersionToImport")
+                            </label>
+                            <select id="mp-details-version" class="form-control mp-details-version-select">
+                                @if (Model.Versions.Count == 0)
+                                {
+                                    <option value="" selected>@T("Plugins.Misc.InfigoMarketplace.Details.Latest")</option>
+                                }
+                                else
+                                {
+                                    for (var i = Model.Versions.Count; i > 0; i--)
+                                    {
+                                        var version = Model.Versions[ i - 1 ];
+                                        <option value="@version" selected="@(i == 0)">
+                                            @if (i == 0)
+                                            {
+                                                @($"v{version} ") @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
+                                            }
+                                            else
+                                            {
+                                                @($"v{version}")
+                                            }
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <button type="button" id="mp-details-import"
+                                class="btn mp-btn-import mp-btn-import-sm"
+                                data-id="@Model.Id">
+                            <i class="fas fa-cloud-arrow-down"></i>
+                            @if (Model.Installed)
+                            {
+                                @T("Plugins.Misc.InfigoMarketplace.Browse.ReImport")
+                            }
+                            else
+                            {
+                                @T("Plugins.Misc.InfigoMarketplace.Details.ImportPackage")
+                            }
+                        </button>
+                    </div>
+
+                    @if (Model.Installed && Model.InstalledProductId.HasValue)
+                    {
+                        <a asp-area="@AreaNames.ADMIN"
+                           asp-controller="Product"
+                           asp-action="Edit"
+                           asp-route-id="@Model.InstalledProductId.Value"
+                           class="mp-details-view-link">
+                            <i class="fas fa-up-right-from-square"></i>
+                            @T("Plugins.Misc.InfigoMarketplace.Details.ViewImportedProduct")
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <div class="mp-details-card mp-details-about">
+                <h3 class="mp-details-section-title">@T("Plugins.Misc.InfigoMarketplace.Details.About")</h3>
+                <div class="mp-details-description">@Html.Raw(Model.Description)</div>
+            </div>
+        }
+    </div>
+</section>
+
+<nop-alert asp-alert-id="import-failed" />
+
+<script>
+    $(function () {
+        $('.mp-details-thumb').on('click', function () {
+            var fullUrl = $(this).data('full');
+            $('#mp-details-active-image').attr('src', fullUrl);
+            $('.mp-details-thumb').removeClass('mp-details-thumb-active');
+            $(this).addClass('mp-details-thumb-active');
+        });
+
+        $('#mp-details-import').on('click', function () {
+            var id = $(this).data('id');
+            var version = $('#mp-details-version').val();
+            var postData = { 'selectedIds': [id], 'version': version };
+            addAntiForgeryToken(postData);
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@(Url.Action("Import", "InfigoMarketplaceAdmin"))',
+                data: postData,
+                traditional: true,
+                beforeSend: function () { showThrobber('@T("Plugins.Misc.InfigoMarketplace.Browse.Importing")'); },
+                complete: function () { hideThrobber(); },
+                success: function (data) {
+                    if (!data) return;
+                    if (data.success) {
+                        displayBarNotification(data.message, 0, 4000);
+                        setTimeout(function () { window.location.reload(); }, 800);
+                    } else {
+                        displayBarNotification(data.message, 1, 4000);
+                    }
+                },
+                error: function () {
+                    showAlert('import-failed', '@T("Plugins.Misc.InfigoMarketplace.Import.Failed")');
+                }
+            });
+        });
+    });
+</script>

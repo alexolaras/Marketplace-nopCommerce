@@ -7,4 +7,6 @@ public interface IInfigoBrowseModelFactory
     public Task<BrowseSearchModel> PrepareBrowseSearchModelAsync(BrowseSearchModel searchModel, CancellationToken ct = default);
 
     public Task<PackageListModel> PreparePackageListModelAsync(BrowseSearchModel searchModel, CancellationToken ct = default);
+
+    public Task<PackageDetailsModel> PreparePackageDetailsModelAsync(Guid id, CancellationToken ct = default);
 }

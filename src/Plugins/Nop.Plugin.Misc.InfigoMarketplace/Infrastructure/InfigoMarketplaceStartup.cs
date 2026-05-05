@@ -17,6 +17,13 @@ public class InfigoMarketplaceStartup : INopStartup
         builder.AddStandardResilienceHandler();
         builder.WithProxy();
 
+        // Presigned image URLs target the storage backend, not the Infigo API host, so use a separate typed client.
+        var imageBuilder = services.AddHttpClient<IInfigoImageDownloader, InfigoImageDownloader>(c =>
+        {
+            c.Timeout = TimeSpan.FromSeconds(30);
+        });
+        imageBuilder.WithProxy();
+
         services.AddScoped<IInstalledPackageTracker, InstalledPackageTracker>();
         services.AddScoped<IInfigoMarkerStore, InfigoMarkerStore>();
         services.AddScoped<IInfigoProductWriter, InfigoProductWriter>();

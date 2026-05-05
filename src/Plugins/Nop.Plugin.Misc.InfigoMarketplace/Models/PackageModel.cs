@@ -33,4 +33,6 @@ public partial record PackageModel : BaseNopModel
     /// Drives the row's "edit imported product" link in the grid.
     /// </summary>
     public int? InstalledProductId { get; set; }
+
+    public string? ImageUrl { get; set; }
 }
