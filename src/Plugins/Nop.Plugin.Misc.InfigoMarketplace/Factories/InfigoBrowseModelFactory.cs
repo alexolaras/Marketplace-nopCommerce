@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Nop.Core;
 using Nop.Plugin.Misc.InfigoMarketplace.Api;
+using Nop.Plugin.Misc.InfigoMarketplace.Api.Dtos;
 using Nop.Plugin.Misc.InfigoMarketplace.Models;
 using Nop.Plugin.Misc.InfigoMarketplace.Services;
 using Nop.Services.Html;
@@ -38,11 +40,10 @@ public class InfigoBrowseModelFactory(
         }
         catch (InfigoApiException ex)
         {
-            // Page should still render so the admin can see the error and fix the connection.
             searchModel.ApiErrorMessage = ex.Message;
         }
 
-        searchModel.SetGridPageSize();
+        //searchModel.SetGridPageSize();
         return searchModel;
     }
 
@@ -50,9 +51,12 @@ public class InfigoBrowseModelFactory(
     {
         ArgumentNullException.ThrowIfNull(searchModel);
 
-        var packages = await apiClient.GetPackagesAsync(searchModel.SearchName, searchModel.SearchCategoryId, ct);
-        var filtered = packages.OrderBy(p => p.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
-        var pagedPackages = filtered.ToPagedList(searchModel);
+        var response = await apiClient.GetPackagesAsync(
+            searchModel.SearchName, searchModel.SearchCategoryId,
+            searchModel.Page, searchModel.PageSize, ct);
+
+        var pagedPackages = new PagedList<PackageApiResponse>(
+            response.Items.ToList(), searchModel.Page - 1, searchModel.PageSize, response.TotalCount);
 
         var installedMap = await installedPackageTracker.GetInstalledProductIdsAsync(pagedPackages.Select(p => p.Id));
 
@@ -90,6 +94,7 @@ public class InfigoBrowseModelFactory(
             Description = package.Description,
             Type = package.Type,
             CategoryName = package.CategoryName,
+            CurrentVersion = package.CurrentVersion,
             Versions = package.Versions ?? new List<string>(),
             Tags = package.Tags ?? new List<string>(),
             Installed = installedMap.ContainsKey(package.Id),

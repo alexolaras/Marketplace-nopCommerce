@@ -17,17 +17,21 @@ public class InfigoApiClient(
     IStoreContext storeContext)
     : IInfigoApiClient
 {
-    public async Task<IReadOnlyList<PackageApiResponse>> GetPackagesAsync(string search, Guid? categoryId, CancellationToken ct = default)
+    public async Task<PagedApiResponse<PackageApiResponse>> GetPackagesAsync(string search, Guid? categoryId, int page, int pageSize, CancellationToken ct = default)
     {
-        var query = new Dictionary<string, string>();
+        var query = new Dictionary<string, string>
+        {
+            ["page"] = page.ToString(),
+            ["pageSize"] = pageSize.ToString()
+        };
         if (!string.IsNullOrWhiteSpace(search))
             query["search"] = search;
         if (categoryId.HasValue)
             query["categoryId"] = categoryId.Value.ToString();
 
         var path = QueryHelpers.AddQueryString(InfigoMarketplaceDefaults.Endpoints.Packages, query);
-        var result = await SendAsync<List<PackageApiResponse>>(HttpMethod.Get, path, baseUrlOverride: null, apiKeyOverride: null, ct);
-        return result ?? new List<PackageApiResponse>();
+        var result = await SendAsync<PagedApiResponse<PackageApiResponse>>(HttpMethod.Get, path, baseUrlOverride: null, apiKeyOverride: null, ct);
+        return result ?? new PagedApiResponse<PackageApiResponse>(Array.Empty<PackageApiResponse>(), 0);
     }
 
     public async Task<PackageDetailApiResponse> GetPackageAsync(Guid id, CancellationToken ct = default)
@@ -49,7 +53,10 @@ public class InfigoApiClient(
 
     public async Task TestConnectionAsync(string baseUrl, string apiKey, CancellationToken ct = default)
     {
-        await SendAsync<List<PackageApiResponse>>(HttpMethod.Get, InfigoMarketplaceDefaults.Endpoints.Packages, baseUrl, apiKey, ct);
+        var path = QueryHelpers.AddQueryString(
+            InfigoMarketplaceDefaults.Endpoints.Packages,
+            new Dictionary<string, string> { ["page"] = "1", ["pageSize"] = "1" });
+        await SendAsync<PagedApiResponse<PackageApiResponse>>(HttpMethod.Get, path, baseUrl, apiKey, ct);
     }
 
     public async Task<T> SendAsync<T>(HttpMethod method, string path, string baseUrlOverride, string apiKeyOverride, CancellationToken ct)

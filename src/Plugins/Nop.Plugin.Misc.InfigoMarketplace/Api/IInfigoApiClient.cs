@@ -4,7 +4,7 @@ namespace Nop.Plugin.Misc.InfigoMarketplace.Api;
 
 public interface IInfigoApiClient
 {
-    public Task<IReadOnlyList<PackageApiResponse>> GetPackagesAsync(string search, Guid? categoryId, CancellationToken ct = default);
+    public Task<PagedApiResponse<PackageApiResponse>> GetPackagesAsync(string search, Guid? categoryId, int page, int pageSize, CancellationToken ct = default);
 
     public Task<PackageDetailApiResponse> GetPackageAsync(Guid id, CancellationToken ct = default);
 

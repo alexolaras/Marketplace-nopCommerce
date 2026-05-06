@@ -149,21 +149,6 @@ select.form-control.mp-select option,
     overflow: hidden;
 }
 
-.pkg-card-menu {
-    position: absolute;
-    top: .75rem;
-    right: .75rem;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    border-radius: .375rem;
-    background-color: rgba(255, 255, 255, .6);
-    font-size: .9rem;
-}
-
 .pkg-card-thumb {
     max-width: 70%;
     max-height: 80%;
@@ -262,6 +247,68 @@ i.pkg-card-thumb-placeholder,
 
 .mp-grid-error {
     color: #dc2626;
+}
+
+.mp-pager {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-top: 1.75rem;
+}
+
+.mp-pager:empty {
+    margin-top: 0;
+}
+
+button.mp-pager-btn,
+.mp-pager-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 .65rem;
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    color: #1f2937;
+    border-radius: .375rem;
+    font-weight: 600;
+    font-size: .875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+
+button.mp-pager-btn:hover,
+.mp-pager-btn:hover {
+    background-color: #f3f4f6;
+    border-color: #c7d2fe;
+    color: #1f2937;
+}
+
+button.mp-pager-btn-active,
+.mp-pager-btn-active,
+button.mp-pager-btn-active:hover,
+.mp-pager-btn-active:hover {
+    background-color: #5b5bd6;
+    border-color: #5b5bd6;
+    color: #fff;
+    cursor: default;
+}
+
+button.mp-pager-btn:disabled,
+button.mp-pager-btn:disabled:hover {
+    color: #d1d5db;
+    background-color: #fff;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+}
+
+.mp-pager-ellipsis {
+    color: #9ca3af;
+    padding: 0 .25rem;
+    font-weight: 600;
 }
 
 /* --- Package details page --- */

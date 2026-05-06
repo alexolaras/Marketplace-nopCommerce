@@ -25,6 +25,7 @@ public partial record PackageDetailsModel : BaseNopModel
     /// All available versions of this package, ordered as returned by the Infigo API
     /// (latest first). The first entry is treated as the latest version.
     /// </summary>
+    public string CurrentVersion { get; set; }
     public IList<string> Versions { get; set; }
 
     public IList<string> Tags { get; set; }

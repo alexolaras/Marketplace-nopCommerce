@@ -6,7 +6,6 @@
     NopHtml.SetActiveMenuItemSystemName(InfigoMarketplaceDefaults.SystemName);
 
     var firstImage = Model.Images.FirstOrDefault();
-    var latestVersion = Model.Versions.LastOrDefault();
 }
 
 <link rel="stylesheet" href="~/Plugins/Misc.InfigoMarketplace/Content/styles.css" />
@@ -65,10 +64,10 @@
                         {
                             <span class="mp-details-badge mp-details-badge-type">@Model.Type</span>
                         }
-                        @if (!string.IsNullOrWhiteSpace(latestVersion))
+                        @if (!string.IsNullOrWhiteSpace(Model.CurrentVersion))
                         {
                             <span class="mp-details-badge mp-details-badge-version">
-                                v@(latestVersion) @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
+                                v@(Model.CurrentVersion) @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
                             </span>
                         }
                         @if (Model.Installed)
@@ -121,14 +120,14 @@
                         </div>
                     }
 
-                    @if (!string.IsNullOrWhiteSpace(latestVersion))
+                    @if (!string.IsNullOrWhiteSpace(Model.CurrentVersion))
                     {
                         <div class="mp-details-meta-row">
                             <span class="mp-details-meta-label">
                                 <i class="fas fa-code-branch"></i>
                                 @T("Plugins.Misc.InfigoMarketplace.Details.LatestVersion")
                             </span>
-                            <span class="mp-details-meta-value">v@(latestVersion)</span>
+                            <span class="mp-details-meta-value">v@(Model.CurrentVersion)</span>
                         </div>
                     }
 
@@ -138,25 +137,18 @@
                                 @T("Plugins.Misc.InfigoMarketplace.Details.VersionToImport")
                             </label>
                             <select id="mp-details-version" class="form-control mp-details-version-select">
-                                @if (Model.Versions.Count == 0)
+                                @if (string.IsNullOrWhiteSpace(Model.CurrentVersion))
                                 {
                                     <option value="" selected>@T("Plugins.Misc.InfigoMarketplace.Details.Latest")</option>
                                 }
                                 else
                                 {
-                                    for (var i = Model.Versions.Count; i > 0; i--)
+                                    <option value="@Model.CurrentVersion" selected>
+                                        @($"v{Model.CurrentVersion} ") @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
+                                    </option>
+                                    foreach (var version in Model.Versions)
                                     {
-                                        var version = Model.Versions[ i - 1 ];
-                                        <option value="@version" selected="@(i == 0)">
-                                            @if (i == 0)
-                                            {
-                                                @($"v{version} ") @T("Plugins.Misc.InfigoMarketplace.Details.Latest")
-                                            }
-                                            else
-                                            {
-                                                @($"v{version}")
-                                            }
-                                        </option>
+                                        <option value="@version">@($"v{version}")</option>
                                     }
                                 }
                             </select>
