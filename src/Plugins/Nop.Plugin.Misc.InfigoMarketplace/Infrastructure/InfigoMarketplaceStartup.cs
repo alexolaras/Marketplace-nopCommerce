@@ -24,6 +24,13 @@ public class InfigoMarketplaceStartup : INopStartup
         });
         imageBuilder.WithProxy();
 
+        // Package binaries can be substantially larger than images, so use a separate client with a longer timeout.
+        var fileBuilder = services.AddHttpClient<IInfigoFileDownloader, InfigoFileDownloader>(c =>
+        {
+            c.Timeout = TimeSpan.FromMinutes(5);
+        });
+        fileBuilder.WithProxy();
+
         services.AddScoped<IInstalledPackageTracker, InstalledPackageTracker>();
         services.AddScoped<IInfigoMarkerStore, InfigoMarkerStore>();
         services.AddScoped<IInfigoProductWriter, InfigoProductWriter>();

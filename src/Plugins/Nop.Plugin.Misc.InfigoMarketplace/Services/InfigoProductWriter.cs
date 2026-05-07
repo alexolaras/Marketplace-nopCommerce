@@ -1,4 +1,5 @@
 using Nop.Core.Domain.Catalog;
+using Nop.Core.Domain.Media;
 using Nop.Plugin.Misc.InfigoMarketplace.Api.Dtos;
 using Nop.Plugin.Misc.InfigoMarketplace.Helpers;
 using Nop.Plugin.Misc.InfigoMarketplace.Models.Import;
@@ -12,7 +13,9 @@ public class InfigoProductWriter(
     IProductService productService,
     IUrlRecordService urlRecordService,
     IPictureService pictureService,
+    IDownloadService downloadService,
     IInfigoImageDownloader imageDownloader,
+    IInfigoFileDownloader fileDownloader,
     IInfigoMarkerStore markerStore) : IInfigoProductWriter
 {
     public async Task<ProductUpsertResult> UpsertAsync(PackageDetailApiResponse pkg)
@@ -64,6 +67,7 @@ public class InfigoProductWriter(
         await urlRecordService.SaveSlugAsync(product, seName, 0);
 
         await AttachPicturesAsync(product, pkg);
+        await AttachDownloadAsync(product, pkg);
 
         return product;
     }
@@ -80,6 +84,9 @@ public class InfigoProductWriter(
         product.UpdatedOnUtc = DateTime.UtcNow;
 
         await productService.UpdateProductAsync(product);
+
+        await AttachDownloadAsync(product, pkg);
+
         return product;
     }
 
@@ -114,5 +121,40 @@ public class InfigoProductWriter(
                 DisplayOrder = displayOrder++
             });
         }
+    }
+
+    private async Task AttachDownloadAsync(Product product, PackageDetailApiResponse pkg)
+    {
+        if (string.IsNullOrWhiteSpace(pkg.DownloadUrl))
+            return;
+
+        var file = await fileDownloader.TryDownloadAsync(pkg.DownloadUrl);
+        if (file is null)
+            return;
+
+        if (product.DownloadId > 0)
+        {
+            var existing = await downloadService.GetDownloadByIdAsync(product.DownloadId);
+            if (existing is not null)
+                await downloadService.DeleteDownloadAsync(existing);
+        }
+
+        var download = new Download
+        {
+            DownloadGuid = Guid.NewGuid(),
+            UseDownloadUrl = false,
+            DownloadBinary = file.Bytes,
+            ContentType = file.ContentType,
+            Filename = Path.GetFileNameWithoutExtension(file.FileName),
+            Extension = file.Extension,
+            IsNew = true
+        };
+        await downloadService.InsertDownloadAsync(download);
+
+        product.IsDownload = true;
+        product.DownloadId = download.Id;
+        product.UnlimitedDownloads = true;
+        product.DownloadActivationTypeId = (int)DownloadActivationType.WhenOrderIsPaid;
+        await productService.UpdateProductAsync(product);
     }
 }
